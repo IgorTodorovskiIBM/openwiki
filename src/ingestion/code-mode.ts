@@ -32,6 +32,7 @@ const OPENWIKI_LEGACY_SENTENCE =
 // it), so every template line stops the removal unless it is untouched.
 const OPENWIKI_LEGACY_TEMPLATE_LINES = [
   "Start here:",
+  "- [OpenWiki quickstart](openwiki/quickstart.md)",
   "OpenWiki includes repository overview, architecture notes, workflows, domain concepts, operations, integrations, testing guidance, and source maps.",
   "When working in this repository, read the OpenWiki quickstart first, then follow its links to the relevant architecture, workflow, domain, operation, and testing notes.",
 ];
@@ -376,26 +377,25 @@ function findLegacyOpenWikiSections(
       fence = { char: marker.char, length: marker.length };
       continue;
     }
-    if (body.trim() !== OPENWIKI_LEGACY_HEADING) {
+    // The released template started at column zero. Do not trim: four spaces
+    // start an indented Markdown code block, which may document this snippet.
+    if (body !== OPENWIKI_LEGACY_HEADING) {
       continue;
     }
 
     let next = i + 1;
-    while (next < lines.length && bodyOf(lines[next]).trim() === "") {
+    while (next < lines.length && bodyOf(lines[next]) === "") {
       next += 1;
     }
     if (
       next >= lines.length ||
-      bodyOf(lines[next]).trim() !== OPENWIKI_LEGACY_SENTENCE
+      bodyOf(lines[next]) !== OPENWIKI_LEGACY_SENTENCE
     ) {
       continue;
     }
 
     let end = i + 1;
-    while (
-      end < lines.length &&
-      isLegacyTemplateLine(bodyOf(lines[end]).trim())
-    ) {
+    while (end < lines.length && isLegacyTemplateLine(bodyOf(lines[end]))) {
       end += 1;
     }
     sections.push({
@@ -413,12 +413,11 @@ function findLegacyOpenWikiSections(
  * i.e. safe to remove as part of the old section. Everything else stops the
  * removal, which is what keeps hand-edited content beneath the section intact.
  */
-function isLegacyTemplateLine(trimmed: string): boolean {
+function isLegacyTemplateLine(line: string): boolean {
   return (
-    trimmed === "" ||
-    trimmed === OPENWIKI_LEGACY_SENTENCE ||
-    OPENWIKI_LEGACY_TEMPLATE_LINES.includes(trimmed) ||
-    /^-\s+\[[^\]]*\]\([^)]*quickstart\.md\)$/u.test(trimmed)
+    line === "" ||
+    line === OPENWIKI_LEGACY_SENTENCE ||
+    OPENWIKI_LEGACY_TEMPLATE_LINES.includes(line)
   );
 }
 

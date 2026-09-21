@@ -461,6 +461,35 @@ Trailing notes that must survive.
     expect(content).toContain(SNIPPET_START);
   });
 
+  test("leaves an indented legacy snippet shown as a Markdown code block", async () => {
+    const repo = await createTempRepo();
+    const indented = LEGACY_SECTION.replace(/^/gmu, "    ");
+    await writeFile(path.join(repo, "AGENTS.md"), `${indented}\n`, "utf8");
+
+    await ensureCodeModeRepoSetup(repo);
+    const content = await readIfPresent(path.join(repo, "AGENTS.md"));
+
+    expect(content).toContain(`    ${LEGACY_SENTENCE}`);
+    expect(content).toContain(SNIPPET_START);
+  });
+
+  test("stops at a customized quickstart link", async () => {
+    const repo = await createTempRepo();
+    const customized = LEGACY_SECTION.replace(
+      "- [OpenWiki quickstart](openwiki/quickstart.md)",
+      "- [Team OpenWiki guide](openwiki/quickstart.md)",
+    );
+    await writeFile(path.join(repo, "AGENTS.md"), `${customized}\n`, "utf8");
+
+    await ensureCodeModeRepoSetup(repo);
+    const content = await readIfPresent(path.join(repo, "AGENTS.md"));
+
+    expect(content).toContain(
+      "- [Team OpenWiki guide](openwiki/quickstart.md)",
+    );
+    expect(content).toContain(SNIPPET_START);
+  });
+
   test("stops at a template line the user appended text to, keeping it and everything below", async () => {
     const repo = await createTempRepo();
     // The "When working…" line is edited, so it is no longer a template line and
