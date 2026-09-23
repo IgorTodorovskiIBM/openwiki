@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { createBobFetch, BOB_USER_AGENT } from "../../src/agent/bob.js";
+import { resolveModelId } from "../../src/agent/index.js";
 import {
   providerHasFixedModel,
   getProviderFixedModel,
@@ -91,5 +92,26 @@ describe("bob provider — fixed model", () => {
   it("other providers do not have a fixed model", () => {
     expect(providerHasFixedModel("openai")).toBe(false);
     expect(providerHasFixedModel("anthropic")).toBe(false);
+  });
+});
+
+describe("bob provider — BOB_MODEL override", () => {
+  afterEach(() => {
+    delete process.env["BOB_MODEL"];
+    delete process.env["OPENWIKI_MODEL_ID"];
+  });
+
+  it("uses premium when BOB_MODEL is unset", () => {
+    expect(resolveModelId({}, "bob")).toBe("premium");
+  });
+
+  it("uses BOB_MODEL when set", () => {
+    process.env["BOB_MODEL"] = "fast";
+    expect(resolveModelId({}, "bob")).toBe("fast");
+  });
+
+  it("ignores OPENWIKI_MODEL_ID for bob", () => {
+    process.env["OPENWIKI_MODEL_ID"] = "gpt-5.5";
+    expect(resolveModelId({}, "bob")).toBe("premium");
   });
 });

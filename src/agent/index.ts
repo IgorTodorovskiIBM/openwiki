@@ -1054,7 +1054,10 @@ export function resolveModelId(
 ): string {
   const fixedModel = getProviderFixedModel(provider);
   if (fixedModel) {
-    return fixedModel;
+    // zSW fork: Bob serves several models (premium, fast, ...); BOB_MODEL picks one.
+    // A dedicated key, so a leftover OPENWIKI_MODEL_ID from another provider is never sent to Bob.
+    const bobModel = provider === "bob" ? process.env.BOB_MODEL?.trim() : "";
+    return bobModel || fixedModel;
   }
 
   const configuredModelId =
